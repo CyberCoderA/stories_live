@@ -1,6 +1,4 @@
 # stories_live
-A project that aims to mimic the "fiction.live" site. It is also heavily inspired by the "QuetionableQuesting" forums design and functionality. This is only a personal project that I made to gauge my skill.
+This project aims to recreate the core functionality of Fiction.live while drawing inspiration from the forum-based design and community features of QuestionableQuesting. It serves as a personal project to evaluate and strengthen my proficiency with modern web development technologies and system design.
 
-I aim to utilize multiple technologies to gauge my proficiency in them. I will employ React for the frontend and Spring Boot for the backend.
-I will utilize Postgres as the database for the users account due to the simplicity in authentication. 
-While MongoDB will be used for document-based objects (like the stories, comments, etc.) to take advantage of its flexible schemas and fast document queries.
+The frontend is built with React, while the backend is developed using Spring Boot. The application follows a polyglot persistence approach by utilizing both PostgreSQL and MongoDB. PostgreSQL is responsible for relational data, including user accounts, authentication, authorization, and other structured entities that require transactional consistency. MongoDB stores document-oriented data such as stories, chapters, comments, and reader interactions, allowing for flexible schemas and efficient retrieval of deeply nested content.
