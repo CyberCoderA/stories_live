@@ -8,4 +8,5 @@ public enum NotificationType {
     LIKE,
     ACTION_UPDATE,
     SYSTEM_ALERT,
+    STORY_UPDATE
 }

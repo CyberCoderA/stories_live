@@ -1,10 +1,9 @@
 package com.heydrian.stories_live.models.users_models;
 
-import org.apache.catalina.User;
-
 import com.heydrian.stories_live.enums.Theme;
 
 import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
@@ -12,7 +11,18 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.MapsId;
 import jakarta.persistence.OneToOne;
+import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
+@Entity
+@Table(name = "user_preferences")
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
 public class UserPreferences {
     
     @Id
@@ -23,7 +33,7 @@ public class UserPreferences {
     @OneToOne(fetch = FetchType.LAZY)
     @MapsId // tells JPA to use the same primary key value as the associated User entity
     @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+    private Users user;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "preferred_theme", nullable = false)
