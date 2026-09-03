@@ -13,6 +13,7 @@ public class AnalyticsController {
     // Check if API is running
     @GetMapping("/status")
     public Map<String, String> status() {
-        return Map.of("status", "API is running!");
+        // Timestamp using instant.now() to get the hh:mm:ss format of the current time
+        return Map.of("status", "API is running!", "timestamp", java.time.Instant.now().toString());
     }
 }

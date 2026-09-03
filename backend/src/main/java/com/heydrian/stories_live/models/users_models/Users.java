@@ -13,6 +13,7 @@ import lombok.Setter;
 
 import java.time.Instant;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.heydrian.stories_live.enums.UserStatus;
 
 @Entity
@@ -30,6 +31,7 @@ public class Users {
     @Column(name = "username", nullable = false)
     private String username;
 
+    @JsonIgnore
     @Column(name = "user_password", nullable = false)
     private String userPassword;
 
