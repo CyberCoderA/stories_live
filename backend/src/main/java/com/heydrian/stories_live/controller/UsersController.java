@@ -10,10 +10,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.heydrian.stories_live.dto.LoginRequest;
 import com.heydrian.stories_live.dto.RegisterRequest;
 import com.heydrian.stories_live.enums.UserStatus;
 import com.heydrian.stories_live.models.users_models.Users;
@@ -36,8 +37,8 @@ public class UsersController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestParam String userEmail, @RequestParam String userPassword) {
-        String token = userService.verify(userEmail, userPassword);
+    public ResponseEntity<?> login(@Valid @RequestBody LoginRequest request) {
+        String token = userService.verify(request.email(), request.password());
 
         if (token == null) {
             return new ResponseEntity<>(Map.of("message", "Invalid credentials"), HttpStatus.UNAUTHORIZED);

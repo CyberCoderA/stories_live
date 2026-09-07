@@ -2,6 +2,7 @@ package com.heydrian.stories_live.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
@@ -38,7 +39,9 @@ public class SecurityConfig {
                 response.setStatus(401);
                 response.setContentType("application/json");
                 response.setCharacterEncoding("UTF-8");
-                response.getWriter().write("{\"message\":\"Unauthorized\"}");
+                response.getWriter().write(new ObjectMapper().writeValueAsString(
+                    java.util.Map.of("message", authException.getMessage())
+                ));
             }))
             .authorizeHttpRequests(auth -> auth
                 // Allow GET requests for status & login
