@@ -7,6 +7,7 @@ import java.util.UUID;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -19,7 +20,6 @@ import com.heydrian.stories_live.dto.RegisterRequest;
 import com.heydrian.stories_live.enums.UserStatus;
 import com.heydrian.stories_live.models.users_models.Users;
 import com.heydrian.stories_live.repository.users_repository.UsersRepository;
-import com.heydrian.stories_live.services.JWTService;
 import com.heydrian.stories_live.services.UserService;
 
 @RestController
@@ -27,13 +27,11 @@ import com.heydrian.stories_live.services.UserService;
 public class UsersController {
     private final UsersRepository usersRepository;
     private final UserService userService;
-    private final JWTService jwtService;
     
     // Constructor for UsersController that takes a UsersRepository as a parameter
-    public UsersController(UsersRepository usersRepository, UserService userService, JWTService jwtService) {
+    public UsersController(UsersRepository usersRepository, UserService userService) {
         this.usersRepository = usersRepository;
         this.userService = userService;
-        this.jwtService = jwtService;
     }
 
     @PostMapping("/login")
@@ -76,6 +74,17 @@ public class UsersController {
 
         userService.addUser(user);
         return new ResponseEntity<>(user, HttpStatus.CREATED);
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<?> getCurrentUser(Authentication authentication) {
+        Users user = usersRepository.findByUserEmail(authentication.getName());
+
+        if (user == null) {
+            return new ResponseEntity<>(Map.of("message", "User not found"), HttpStatus.NOT_FOUND);
+        }
+
+        return ResponseEntity.ok(user);
     }
 
 }
