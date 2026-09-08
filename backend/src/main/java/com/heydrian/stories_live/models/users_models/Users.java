@@ -25,17 +25,17 @@ import com.heydrian.stories_live.enums.UserStatus;
 public class Users {
 
     @Id
-    @Column(name = "user_id", nullable = false)
+    @Column(name = "user_id", nullable = false, unique = true)
     private String userId;
 
-    @Column(name = "username", nullable = false)
+    @Column(name = "username", nullable = false, unique = true)
     private String username;
 
     @JsonIgnore
     @Column(name = "user_password", nullable = false)
     private String userPassword;
 
-    @Column(name = "user_email", nullable = false)
+    @Column(name = "user_email", nullable = false, unique = true)
     private String userEmail;
 
     @Enumerated(EnumType.STRING)

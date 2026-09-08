@@ -15,9 +15,12 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.heydrian.stories_live.dto.LoginRequest;
-import com.heydrian.stories_live.dto.RegisterRequest;
+import com.heydrian.stories_live.dto.request.LoginRequest;
+import com.heydrian.stories_live.dto.request.RegisterRequest;
+import com.heydrian.stories_live.dto.response.ApiResponse;
+import com.heydrian.stories_live.dto.response.UserResponse;
 import com.heydrian.stories_live.enums.UserStatus;
+import com.heydrian.stories_live.exception.ErrorResponse;
 import com.heydrian.stories_live.models.users_models.Users;
 import com.heydrian.stories_live.repository.users_repository.UsersRepository;
 import com.heydrian.stories_live.services.UserService;
@@ -39,7 +42,12 @@ public class UsersController {
         String token = userService.verify(request.email(), request.password());
 
         if (token == null) {
-            return new ResponseEntity<>(Map.of("message", "Invalid credentials"), HttpStatus.UNAUTHORIZED);
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(ErrorResponse.of(
+                    HttpStatus.UNAUTHORIZED.value(),
+                    "INVALID_CREDENTIALS",
+                    "Email or password is incorrect"
+                ));
         }
 
         // Code block to embed the JWT token into the browser
@@ -52,13 +60,24 @@ public class UsersController {
         // response.addHeader("Set-Cookie", cookie.toString());
 
         System.out.println("Generated [JWT] Token: " + token); // Log the generated token
-        return new ResponseEntity<>(Map.of("token", token), HttpStatus.OK);
+        return ResponseEntity.ok(
+            ApiResponse.of(
+                HttpStatus.OK.value(),
+                "Login successful",
+                Map.of("token", token)
+            )
+        );
     }
 
     @PostMapping("/register")
     public ResponseEntity<?> register(@Valid @ModelAttribute RegisterRequest request) {
         if (usersRepository.findByUserEmail(request.email()) != null) {
-            return new ResponseEntity<>(Map.of("message", "Email already exists"), HttpStatus.BAD_REQUEST);
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(ErrorResponse.of(
+                    HttpStatus.CONFLICT.value(),
+                    "DUPLICATE_RESOURCE",
+                    "Email already exists"
+                ));
         }
 
         Instant currentTimestamp = Instant.now();
@@ -73,7 +92,15 @@ public class UsersController {
         );
 
         userService.addUser(user);
-        return new ResponseEntity<>(user, HttpStatus.CREATED);
+
+        return new ResponseEntity<>(
+            ApiResponse.of(
+                HttpStatus.CREATED.value(),
+                "User registered successfully",
+                UserResponse.fromUser(user)
+            ),
+            HttpStatus.CREATED
+        );
     }
 
     @GetMapping("/me")
@@ -81,10 +108,21 @@ public class UsersController {
         Users user = usersRepository.findByUserEmail(authentication.getName());
 
         if (user == null) {
-            return new ResponseEntity<>(Map.of("message", "User not found"), HttpStatus.NOT_FOUND);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(ErrorResponse.of(
+                    HttpStatus.NOT_FOUND.value(),
+                    "RESOURCE_NOT_FOUND",
+                    "User not found"
+                ));
         }
 
-        return ResponseEntity.ok(user);
+        return ResponseEntity.ok(
+            ApiResponse.of(
+                HttpStatus.OK.value(),
+                "User retrieved successfully",
+                UserResponse.fromUser(user)
+            )
+        );
     }
 
 }
