@@ -10,7 +10,10 @@ public record UserResponse(
     String userEmail,
     UserStatus userStatus,
     Instant createdAt,
-    Instant lastLoginAt
+    Instant lastLoginAt,
+    String userVerificationCode,
+    Instant verificationExpiry,
+    Boolean emailVerified
 ) {
     public static UserResponse fromUser(Users user) {
         return new UserResponse(
@@ -19,7 +22,10 @@ public record UserResponse(
             user.getUserEmail(),
             user.getUserStatus(),
             user.getCreatedAt(),
-            user.getLastLoginAt()
+            user.getLastLoginAt(),
+            user.getUserVerificationCode(),
+            user.getVerificationExpiry(),
+            user.getEmailVerified()
         );
     }
 }

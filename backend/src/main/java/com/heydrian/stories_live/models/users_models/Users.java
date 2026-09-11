@@ -47,4 +47,13 @@ public class Users {
 
     @Column(name = "last_login_at", nullable = false)
     private Instant lastLoginAt;
+
+    @Column(name = "user_verification_code")
+    private String userVerificationCode;
+
+    @Column(name = "verification_code_expiry")
+    private Instant verificationExpiry;
+
+    @Column(name = "email_verified")
+    private Boolean emailVerified;
 }

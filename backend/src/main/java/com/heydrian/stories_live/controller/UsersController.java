@@ -1,8 +1,10 @@
 package com.heydrian.stories_live.controller;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.util.Map;
 import java.util.UUID;
+import java.util.Random;
 
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -17,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.heydrian.stories_live.dto.request.LoginRequest;
 import com.heydrian.stories_live.dto.request.RegisterRequest;
+import com.heydrian.stories_live.dto.request.VerifyEmailRequest;
 import com.heydrian.stories_live.dto.response.ApiResponse;
 import com.heydrian.stories_live.dto.response.UserResponse;
 import com.heydrian.stories_live.enums.UserStatus;
@@ -28,6 +31,7 @@ import com.heydrian.stories_live.services.UserService;
 @RestController
 @RequestMapping("/api/users")
 public class UsersController {
+    private Random rnd = new Random();
     private final UsersRepository usersRepository;
     private final UserService userService;
     
@@ -59,7 +63,9 @@ public class UsersController {
 
         // response.addHeader("Set-Cookie", cookie.toString());
 
-        System.out.println("Generated [JWT] Token: " + token); // Log the generated token
+        // Log the generated token
+        // TO BE REMOVED LATER!!! USED ONLY FOR POSTMAN TESTING
+        System.out.println("Generated [JWT] Token: " + token); 
         return ResponseEntity.ok(
             ApiResponse.of(
                 HttpStatus.OK.value(),
@@ -71,6 +77,7 @@ public class UsersController {
 
     @PostMapping("/register")
     public ResponseEntity<?> register(@Valid @ModelAttribute RegisterRequest request) {
+        // Validate if the email already exists in the database
         if (usersRepository.findByUserEmail(request.email()) != null) {
             return ResponseEntity.status(HttpStatus.CONFLICT)
                 .body(ErrorResponse.of(
@@ -86,9 +93,12 @@ public class UsersController {
             request.username(),
             request.password(),
             request.email(),
-            UserStatus.ACTIVE,
+            UserStatus.PENDING_VERIFICATION,
             currentTimestamp,
-            currentTimestamp
+            currentTimestamp,
+            String.format("%06d", rnd.nextInt(100000)),
+            currentTimestamp.plus(Duration.ofMinutes(1)),
+            false
         );
 
         userService.addUser(user);
@@ -101,6 +111,11 @@ public class UsersController {
             ),
             HttpStatus.CREATED
         );
+    }
+
+    @PostMapping("/verify-email")
+    public ResponseEntity<?> verifyEmail(@Valid @RequestBody VerifyEmailRequest request) {
+        return ResponseEntity.ok("Testing");
     }
 
     @GetMapping("/me")

@@ -25,6 +25,7 @@ public class UserService {
 
     public Users addUser(Users user) {
         user.setUserPassword(encoder.encode(user.getUserPassword()));
+        user.setUserVerificationCode(encoder.encode(user.getUserVerificationCode()));
         return repo.save(user);
     }
 
