@@ -6,12 +6,11 @@ import com.heydrian.stories_live.models.users_models.Users;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 
 import java.time.Instant;
+import java.nio.charset.StandardCharsets;
 import java.util.Date;
-import java.util.Base64;
 import java.util.function.Function;
 
 import javax.crypto.SecretKey;
@@ -21,26 +20,37 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 @Service
 public class JWTService {
-    @Value("${jwt.secret:medicore-super-secret-key-that-is-at-least-32-bytes-long}")
+    @Value("${JWT_SECRET}")
     private String secretKey;
 
+    @Value("${JWT_EXPIRATION_SECONDS:3600}")
+    private long expirationSeconds;
+
     private SecretKey getKey() {
-        String normalizedKey = secretKey;
-        if (normalizedKey.length() < 32) {
-            normalizedKey = String.format("%-32s", normalizedKey).replace(' ', '0');
+        byte[] secretBytes = secretKey == null
+            ? new byte[0]
+            : secretKey.getBytes(StandardCharsets.UTF_8);
+
+        if (secretBytes.length < 32) {
+            throw new IllegalStateException("JWT_SECRET must contain at least 32 characters");
         }
-        return Keys.hmacShaKeyFor(Decoders.BASE64.decode(Base64.getEncoder().encodeToString(normalizedKey.getBytes())));
+
+        return Keys.hmacShaKeyFor(secretBytes);
     }
 
     // Generates JWT token
     public String generateToken(Users user) {
+        if (expirationSeconds <= 0) {
+            throw new IllegalStateException("JWT_EXPIRATION_SECONDS must be greater than zero");
+        }
+
         Instant now = Instant.now();
 
         return Jwts
             .builder()
             .subject(user.getUserEmail())
             .issuedAt(java.util.Date.from(now))
-            .expiration(java.util.Date.from(now.plusSeconds(60 * 60))) // Token valid for 1 hour
+            .expiration(Date.from(now.plusSeconds(expirationSeconds)))
             .signWith(getKey())
             .compact();
     }
