@@ -34,6 +34,10 @@ public class UserService {
         Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(email, password));
         if (authentication.isAuthenticated()) {
             Users user = repo.findByUserEmail(email);
+            user.setLastLoginAt(Instant.now());
+            repo.save(user);
+
+            System.out.println("[LOGIN] " + user.getLastLoginAt());
             if (user != null) {
                 return jwtService.generateToken(user);
             }
