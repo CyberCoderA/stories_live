@@ -22,7 +22,29 @@ public class UserService {
     @Autowired
     AuthenticationManager authenticationManager;
 
+    @Autowired
+    private EmailService emailService;
+
     private final BCryptPasswordEncoder encoder = new BCryptPasswordEncoder(12);
+
+    public String createVerificationCode(Users user) {
+        String verificationCode = emailService.generateOtp();
+        user.setUserVerificationCode(encoder.encode(verificationCode));
+        user.setVerificationExpiry(Instant.now().plusSeconds(60));
+        repo.save(user);
+        return verificationCode;
+    }
+
+    public boolean resendVerification(String email) {
+        Users user = repo.findByUserEmail(email);
+        if (user == null || Boolean.TRUE.equals(user.getEmailVerified())) {
+            return false;
+        }
+
+        String verificationCode = createVerificationCode(user);
+        emailService.sendVerificationEmail(user.getUserEmail(), verificationCode);
+        return true;
+    }
 
     public Users addUser(Users user) {
         user.setUserPassword(encoder.encode(user.getUserPassword()));

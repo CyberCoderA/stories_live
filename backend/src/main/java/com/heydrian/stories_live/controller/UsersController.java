@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.heydrian.stories_live.dto.request.LoginRequest;
 import com.heydrian.stories_live.dto.request.RegisterRequest;
+import com.heydrian.stories_live.dto.request.ResendVerificationRequest;
 import com.heydrian.stories_live.dto.request.VerifyEmailRequest;
 import com.heydrian.stories_live.dto.response.ApiResponse;
 import com.heydrian.stories_live.dto.response.UserResponse;
@@ -105,7 +106,6 @@ public class UsersController {
             currentTimestamp.plus(Duration.ofMinutes(1)),
             false
         );
-
         userService.addUser(user);
 
         emailService.sendVerificationEmail(request.email(), verificationCode);
@@ -135,6 +135,26 @@ public class UsersController {
             ApiResponse.of(
                 HttpStatus.OK.value(),
                 "Email verified successfully",
+                Map.of("email", request.email())
+            )
+        );
+    }
+
+    @PostMapping("/resend-verification")
+    public ResponseEntity<?> resendVerification(@Valid @RequestBody ResendVerificationRequest request) {
+        if (!userService.resendVerification(request.email())) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(ErrorResponse.of(
+                    HttpStatus.BAD_REQUEST.value(),
+                    "INVALID_VERIFICATION_REQUEST",
+                    "The account cannot receive a verification email"
+                ));
+        }
+
+        return ResponseEntity.ok(
+            ApiResponse.of(
+                HttpStatus.OK.value(),
+                "Verification email sent successfully",
                 Map.of("email", request.email())
             )
         );
