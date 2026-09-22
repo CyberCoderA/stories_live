@@ -1,0 +1,12 @@
+ALTER TABLE users
+    DROP CONSTRAINT IF EXISTS users_user_status_check;
+
+ALTER TABLE users
+    ADD CONSTRAINT users_user_status_check
+    CHECK (user_status IN (
+        'ACTIVE',
+        'INACTIVE',
+        'PENDING_VERIFICATION',
+        'SUSPENDED',
+        'BANNED'
+    ));

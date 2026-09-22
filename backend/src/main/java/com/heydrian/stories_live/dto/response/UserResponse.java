@@ -11,8 +11,6 @@ public record UserResponse(
     UserStatus userStatus,
     Instant createdAt,
     Instant lastLoginAt,
-    String userVerificationCode,
-    Instant verificationExpiry,
     Boolean emailVerified
 ) {
     public static UserResponse fromUser(Users user) {
@@ -23,8 +21,6 @@ public record UserResponse(
             user.getUserStatus(),
             user.getCreatedAt(),
             user.getLastLoginAt(),
-            user.getUserVerificationCode(),
-            user.getVerificationExpiry(),
             user.getEmailVerified()
         );
     }

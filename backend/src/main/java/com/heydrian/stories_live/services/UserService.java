@@ -6,6 +6,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import java.time.Instant;
 
 import com.heydrian.stories_live.models.users_models.Users;
 import com.heydrian.stories_live.repository.users_repository.UsersRepository;
@@ -39,5 +40,23 @@ public class UserService {
         }
 
         return null;
+    }
+
+    public boolean verifyEmail(String email, String verificationCode) {
+        Users user = repo.findByUserEmail(email);
+
+        if (user == null || Boolean.TRUE.equals(user.getEmailVerified())
+                || user.getVerificationExpiry() == null
+                || user.getVerificationExpiry().isBefore(Instant.now())
+                || !encoder.matches(verificationCode, user.getUserVerificationCode())) {
+            return false;
+        }
+
+        user.setEmailVerified(true);
+        user.setUserStatus(com.heydrian.stories_live.enums.UserStatus.ACTIVE);
+        user.setUserVerificationCode(null);
+        user.setVerificationExpiry(null);
+        repo.save(user);
+        return true;
     }
 }

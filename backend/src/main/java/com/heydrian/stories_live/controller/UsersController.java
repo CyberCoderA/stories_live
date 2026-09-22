@@ -4,9 +4,10 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.Map;
 import java.util.UUID;
-import java.util.Random;
 
 import jakarta.validation.Valid;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -26,14 +27,17 @@ import com.heydrian.stories_live.enums.UserStatus;
 import com.heydrian.stories_live.exception.ErrorResponse;
 import com.heydrian.stories_live.models.users_models.Users;
 import com.heydrian.stories_live.repository.users_repository.UsersRepository;
+import com.heydrian.stories_live.services.EmailService;
 import com.heydrian.stories_live.services.UserService;
 
 @RestController
 @RequestMapping("/api/users")
 public class UsersController {
-    private Random rnd = new Random();
     private final UsersRepository usersRepository;
     private final UserService userService;
+
+    @Autowired 
+    private EmailService emailService;
     
     // Constructor for UsersController that takes a UsersRepository as a parameter
     public UsersController(UsersRepository usersRepository, UserService userService) {
@@ -88,6 +92,7 @@ public class UsersController {
         }
 
         Instant currentTimestamp = Instant.now();
+        String verificationCode = emailService.generateOtp();
         Users user = new Users(
             String.format("%s-%s", request.username(), UUID.randomUUID().toString()),
             request.username(),
@@ -96,12 +101,14 @@ public class UsersController {
             UserStatus.PENDING_VERIFICATION,
             currentTimestamp,
             currentTimestamp,
-            String.format("%06d", rnd.nextInt(100000)),
+            verificationCode,
             currentTimestamp.plus(Duration.ofMinutes(1)),
             false
         );
 
         userService.addUser(user);
+
+        emailService.sendVerificationEmail(request.email(), verificationCode);
 
         return new ResponseEntity<>(
             ApiResponse.of(
@@ -115,7 +122,22 @@ public class UsersController {
 
     @PostMapping("/verify-email")
     public ResponseEntity<?> verifyEmail(@Valid @RequestBody VerifyEmailRequest request) {
-        return ResponseEntity.ok("Testing");
+        if (!userService.verifyEmail(request.email(), request.verificationCode())) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(ErrorResponse.of(
+                    HttpStatus.BAD_REQUEST.value(),
+                    "INVALID_VERIFICATION_CODE",
+                    "The verification code is invalid or expired"
+                ));
+        }
+
+        return ResponseEntity.ok(
+            ApiResponse.of(
+                HttpStatus.OK.value(),
+                "Email verified successfully",
+                Map.of("email", request.email())
+            )
+        );
     }
 
     @GetMapping("/me")
