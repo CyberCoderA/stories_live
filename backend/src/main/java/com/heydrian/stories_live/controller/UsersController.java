@@ -18,7 +18,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.heydrian.stories_live.dto.request.ForgotPasswordRequest;
 import com.heydrian.stories_live.dto.request.LoginRequest;
+import com.heydrian.stories_live.dto.request.PasswordResetRequest;
 import com.heydrian.stories_live.dto.request.RegisterRequest;
 import com.heydrian.stories_live.dto.request.ResendVerificationRequest;
 import com.heydrian.stories_live.dto.request.VerifyEmailRequest;
@@ -76,6 +78,45 @@ public class UsersController {
                 HttpStatus.OK.value(),
                 "Login successful",
                 Map.of("token", token)
+            )
+        );
+    }
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity<?> forgotPassword(@Valid @RequestBody ForgotPasswordRequest request) {
+        userService.requestPasswordReset(request.email());
+
+        return ResponseEntity.ok(
+            ApiResponse.of(
+                HttpStatus.OK.value(),
+                "A password reset email has been sent to: " + request.email(),
+                Map.of("email", request.email())
+            )
+        );
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<?> resetPassword(@Valid @RequestBody PasswordResetRequest request) {
+        boolean resetSuccessful = userService.resetPassword(
+            request.selector(),
+            request.token(),
+            request.newPassword()
+        );
+
+        if (!resetSuccessful) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(ErrorResponse.of(
+                    HttpStatus.BAD_REQUEST.value(),
+                    "INVALID_RESET_TOKEN",
+                    "The reset token is invalid or expired"
+                ));
+        }
+
+        return ResponseEntity.ok(
+            ApiResponse.of(
+                HttpStatus.OK.value(),
+                "Password reset successfully",
+                Map.of("status", "updated")
             )
         );
     }

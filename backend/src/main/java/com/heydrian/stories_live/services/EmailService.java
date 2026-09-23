@@ -2,7 +2,6 @@ package com.heydrian.stories_live.services;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
@@ -35,6 +34,28 @@ public class EmailService {
             helper.setTo(to);
             helper.setSubject("Verify your Stories Live account");
             helper.setText("Your Stories Live verification code is: " + verificationCode);
+
+            mailSender.send(message);
+        } catch (MessagingException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void sendPasswordResetEmail(String to, String selector, String token) {
+        MimeMessage message = mailSender.createMimeMessage();
+        MimeMessageHelper helper;
+        try {
+            helper = new MimeMessageHelper(message, true);
+            helper.setFrom(fromUsername);
+            helper.setTo(to);
+            helper.setSubject("Reset your Stories Live password");
+            helper.setText(
+                "A password reset was requested for your Stories Live account.\n\n" +
+                "Use the reset token below in your app to continue. This token expires in 15 minutes.\n\n" +
+                "Selector: " + selector + "\n" + "\n" +
+                "Token: " + token,
+                false
+            );
 
             mailSender.send(message);
         } catch (MessagingException e) {
