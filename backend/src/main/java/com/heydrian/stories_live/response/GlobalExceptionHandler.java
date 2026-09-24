@@ -1,4 +1,4 @@
-package com.heydrian.stories_live.exception;
+package com.heydrian.stories_live.response;
 
 import java.util.LinkedHashMap;
 import java.util.Map;

@@ -23,13 +23,13 @@ import com.heydrian.stories_live.dto.request.LoginRequest;
 import com.heydrian.stories_live.dto.request.PasswordResetRequest;
 import com.heydrian.stories_live.dto.request.RegisterRequest;
 import com.heydrian.stories_live.dto.request.ResendVerificationRequest;
+import com.heydrian.stories_live.dto.request.UpdateUsernameRequest;
 import com.heydrian.stories_live.dto.request.VerifyEmailRequest;
-import com.heydrian.stories_live.dto.response.ApiResponse;
 import com.heydrian.stories_live.dto.response.UserResponse;
 import com.heydrian.stories_live.enums.UserStatus;
-import com.heydrian.stories_live.exception.ErrorResponse;
 import com.heydrian.stories_live.models.users_models.Users;
 import com.heydrian.stories_live.repository.users_repository.UsersRepository;
+import com.heydrian.stories_live.response.ResponseHandler;
 import com.heydrian.stories_live.services.EmailService;
 import com.heydrian.stories_live.services.UserService;
 
@@ -53,12 +53,7 @@ public class UsersController {
         String token = userService.verify(request.email(), request.password());
 
         if (token == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                .body(ErrorResponse.of(
-                    HttpStatus.UNAUTHORIZED.value(),
-                    "INVALID_CREDENTIALS",
-                    "Email or password is incorrect"
-                ));
+            return ResponseHandler.error(HttpStatus.UNAUTHORIZED, "INVALID_CREDENTIALS", "Email or password is incorrect");
         }
 
         // Code block to embed the JWT token into the browser
@@ -72,26 +67,17 @@ public class UsersController {
 
         // Log the generated token
         // TO BE REMOVED LATER!!! USED ONLY FOR POSTMAN TESTING
-        System.out.println("Generated [JWT] Token: " + token); 
-        return ResponseEntity.ok(
-            ApiResponse.of(
-                HttpStatus.OK.value(),
-                "Login successful",
-                Map.of("token", token)
-            )
-        );
+        return ResponseHandler.success(HttpStatus.OK, "Login successful", Map.of("token", token));
     }
 
     @PostMapping("/forgot-password")
     public ResponseEntity<?> forgotPassword(@Valid @RequestBody ForgotPasswordRequest request) {
         userService.requestPasswordReset(request.email());
 
-        return ResponseEntity.ok(
-            ApiResponse.of(
-                HttpStatus.OK.value(),
-                "A password reset email has been sent to: " + request.email(),
-                Map.of("email", request.email())
-            )
+        return ResponseHandler.success(
+            HttpStatus.OK,
+            "A password reset email has been sent to: " + request.email(),
+            Map.of("email", request.email())
         );
     }
 
@@ -104,33 +90,17 @@ public class UsersController {
         );
 
         if (!resetSuccessful) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(ErrorResponse.of(
-                    HttpStatus.BAD_REQUEST.value(),
-                    "INVALID_RESET_TOKEN",
-                    "The reset token is invalid or expired"
-                ));
+            return ResponseHandler.error(HttpStatus.BAD_REQUEST, "INVALID_RESET_TOKEN", "The reset token is invalid or expired");
         }
 
-        return ResponseEntity.ok(
-            ApiResponse.of(
-                HttpStatus.OK.value(),
-                "Password reset successfully",
-                Map.of("status", "updated")
-            )
-        );
+        return ResponseHandler.success(HttpStatus.OK, "Password reset successfully", Map.of("status", "updated"));
     }
 
     @PostMapping("/register")
     public ResponseEntity<?> register(@Valid @ModelAttribute RegisterRequest request) {
         // Validate if the email already exists in the database
         if (usersRepository.findByUserEmail(request.email()) != null) {
-            return ResponseEntity.status(HttpStatus.CONFLICT)
-                .body(ErrorResponse.of(
-                    HttpStatus.CONFLICT.value(),
-                    "DUPLICATE_RESOURCE",
-                    "Email already exists"
-                ));
+            return ResponseHandler.error(HttpStatus.CONFLICT, "DUPLICATE_RESOURCE", "Email already exists");
         }
 
         Instant currentTimestamp = Instant.now();
@@ -151,54 +121,25 @@ public class UsersController {
 
         emailService.sendVerificationEmail(request.email(), verificationCode);
 
-        return new ResponseEntity<>(
-            ApiResponse.of(
-                HttpStatus.CREATED.value(),
-                "User registered successfully",
-                UserResponse.fromUser(user)
-            ),
-            HttpStatus.CREATED
-        );
+        return ResponseHandler.created("User registered successfully", UserResponse.fromUser(user));
     }
 
     @PostMapping("/verify-email")
     public ResponseEntity<?> verifyEmail(@Valid @RequestBody VerifyEmailRequest request) {
         if (!userService.verifyEmail(request.email(), request.verificationCode())) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(ErrorResponse.of(
-                    HttpStatus.BAD_REQUEST.value(),
-                    "INVALID_VERIFICATION_CODE",
-                    "The verification code is invalid or expired"
-                ));
+            return ResponseHandler.error(HttpStatus.BAD_REQUEST, "INVALID_VERIFICATION_CODE", "The verification code is invalid or expired");
         }
 
-        return ResponseEntity.ok(
-            ApiResponse.of(
-                HttpStatus.OK.value(),
-                "Email verified successfully",
-                Map.of("email", request.email())
-            )
-        );
+        return ResponseHandler.success(HttpStatus.OK, "Email verified successfully", Map.of("email", request.email()));
     }
 
     @PostMapping("/resend-verification")
     public ResponseEntity<?> resendVerification(@Valid @RequestBody ResendVerificationRequest request) {
         if (!userService.resendVerification(request.email())) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(ErrorResponse.of(
-                    HttpStatus.BAD_REQUEST.value(),
-                    "INVALID_VERIFICATION_REQUEST",
-                    "The account cannot receive a verification email"
-                ));
+            return ResponseHandler.error(HttpStatus.BAD_REQUEST, "INVALID_VERIFICATION_REQUEST", "The account cannot receive a verification email");
         }
 
-        return ResponseEntity.ok(
-            ApiResponse.of(
-                HttpStatus.OK.value(),
-                "Verification email sent successfully",
-                Map.of("email", request.email())
-            )
-        );
+        return ResponseHandler.success(HttpStatus.OK, "Verification email sent successfully", Map.of("email", request.email()));
     }
 
     @GetMapping("/me")
@@ -206,21 +147,37 @@ public class UsersController {
         Users user = usersRepository.findByUserEmail(authentication.getName());
 
         if (user == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body(ErrorResponse.of(
-                    HttpStatus.NOT_FOUND.value(),
-                    "RESOURCE_NOT_FOUND",
-                    "User not found"
-                ));
+            return ResponseHandler.error(HttpStatus.NOT_FOUND, "RESOURCE_NOT_FOUND", "User not found");
         }
 
-        return ResponseEntity.ok(
-            ApiResponse.of(
-                HttpStatus.OK.value(),
-                "User retrieved successfully",
-                UserResponse.fromUser(user)
-            )
-        );
+        return ResponseHandler.success(HttpStatus.OK, "User retrieved successfully!", UserResponse.fromUser(user));
+    }
+
+    @PostMapping("/update-username")
+    public ResponseEntity<?> updateUsername(Authentication authentication,
+        @Valid @RequestBody UpdateUsernameRequest request) {
+
+        if (authentication == null || authentication.getName() == null) {
+            return ResponseHandler.error(HttpStatus.UNAUTHORIZED, "UNAUTHORIZED", "Authentication is required");
+        }
+
+        try {
+            Users user = userService.updateUsername(authentication.getName(), request.newUsername());
+            return ResponseHandler.success(HttpStatus.OK, "Username successfully changed!", Map.of("username", user.getUsername()));
+        } catch (IllegalArgumentException ex) {
+            HttpStatus status = HttpStatus.BAD_REQUEST;
+            String code = "INVALID_USERNAME";
+
+            if ("Username already exists".equals(ex.getMessage())) {
+                status = HttpStatus.CONFLICT;
+                code = "DUPLICATE_RESOURCE";
+            } else if ("User not found".equals(ex.getMessage())) {
+                status = HttpStatus.NOT_FOUND;
+                code = "RESOURCE_NOT_FOUND";
+            }
+
+            return ResponseHandler.error(status, code, ex.getMessage());
+        }
     }
 
 }

@@ -1,7 +1,7 @@
-package com.heydrian.stories_live.exception;
+package com.heydrian.stories_live.response;
 
-import java.util.Map;
 import java.time.Instant;
+import java.util.Map;
 
 public record ErrorResponse(
     int status,

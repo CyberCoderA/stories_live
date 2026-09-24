@@ -17,17 +17,19 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import com.heydrian.stories_live.filters.JWTFilter;
-import com.heydrian.stories_live.exception.ErrorResponse;
+import com.heydrian.stories_live.response.ErrorResponse;
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
 
     private final JWTFilter jwtFilter;
     private final UserDetailsService userDetailsService;
+    private final ObjectMapper objectMapper;
     
-    public SecurityConfig(JWTFilter jwtFilter, UserDetailsService userDetailsService) {
+    public SecurityConfig(JWTFilter jwtFilter, UserDetailsService userDetailsService, ObjectMapper objectMapper) {
         this.jwtFilter = jwtFilter;
         this.userDetailsService = userDetailsService;
+        this.objectMapper = objectMapper;
     }
 
     @Bean
@@ -38,7 +40,7 @@ public class SecurityConfig {
                 response.setStatus(401);
                 response.setContentType("application/json");
                 response.setCharacterEncoding("UTF-8");
-                response.getWriter().write(new ObjectMapper().writeValueAsString(
+                response.getWriter().write(objectMapper.writeValueAsString(
                     ErrorResponse.of(401, "UNAUTHORIZED", "Authentication is required")
                 ));
             }))

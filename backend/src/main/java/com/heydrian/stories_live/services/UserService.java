@@ -160,4 +160,37 @@ public class UserService {
         resetTokenRepository.save(resetToken);
         return true;
     }
+
+    @Transactional
+    public Users updateUsername(String email, String newUsername) {
+        if (email == null || email.isBlank()) {
+            throw new IllegalArgumentException("User email is required");
+        }
+
+        String normalizedUsername = newUsername == null ? "" : newUsername.trim();
+        if (normalizedUsername.isEmpty()) {
+            throw new IllegalArgumentException("Username is required");
+        }
+
+        if (normalizedUsername.length() > 50) {
+            throw new IllegalArgumentException("Username must not exceed 50 characters");
+        }
+
+        Users user = repo.findByUserEmail(email);
+        if (user == null) {
+            throw new IllegalArgumentException("User not found");
+        }
+
+        if (normalizedUsername.equals(user.getUsername())) {
+            return user;
+        }
+
+        Users existingUser = repo.findByUsername(normalizedUsername);
+        if (existingUser != null && !existingUser.getUserId().equals(user.getUserId())) {
+            throw new IllegalArgumentException("Username already exists");
+        }
+
+        user.setUsername(normalizedUsername);
+        return repo.save(user);
+    }
 }
