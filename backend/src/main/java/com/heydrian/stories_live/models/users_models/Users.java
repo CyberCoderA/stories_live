@@ -15,6 +15,7 @@ import java.time.Instant;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.heydrian.stories_live.enums.UserStatus;
+import com.heydrian.stories_live.enums.Roles;
 
 @Entity
 @Table(name = "users")
@@ -37,6 +38,10 @@ public class Users {
 
     @Column(name = "user_email", nullable = false, unique = true)
     private String userEmail;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "user_role", nullable = false)
+    private Roles userRole;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "user_status", nullable = false)

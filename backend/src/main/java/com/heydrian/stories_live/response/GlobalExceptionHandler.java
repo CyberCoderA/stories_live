@@ -10,6 +10,7 @@ import org.springframework.security.authentication.DisabledException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.server.ResponseStatusException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -31,6 +32,16 @@ public class GlobalExceptionHandler {
                 HttpStatus.FORBIDDEN.value(),
                 "ACCOUNT_NOT_VERIFIED",
                 "Please verify your email before logging in"
+            ));
+    }
+
+    @ExceptionHandler(ResponseStatusException.class)
+    public ResponseEntity<ErrorResponse> handleResponseStatusException(ResponseStatusException exception) {
+        return ResponseEntity.status(exception.getStatusCode())
+            .body(ErrorResponse.of(
+                exception.getStatusCode().value(),
+                exception.getStatusCode().equals(HttpStatus.CONFLICT) ? "DUPLICATE_RESOURCE" : "REQUEST_ERROR",
+                exception.getMessage()
             ));
     }
 

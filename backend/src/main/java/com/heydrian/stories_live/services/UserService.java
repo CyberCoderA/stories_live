@@ -11,7 +11,6 @@ import java.security.SecureRandom;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Base64;
-import java.util.UUID;
 
 import com.heydrian.stories_live.models.users_models.PasswordResetToken;
 import com.heydrian.stories_live.models.users_models.Users;

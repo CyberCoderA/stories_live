@@ -9,24 +9,33 @@ import com.heydrian.stories_live.dto.response.ApiResponse;
 
 public final class ResponseHandler {
 
-    private static final BaseResponse BASE_RESPONSE = new BaseResponse();
-
     private ResponseHandler() {
     }
 
     public static <T> ResponseEntity<ApiResponse<T>> success(HttpStatus status, String message, T data) {
-        return BASE_RESPONSE.success(status, message, data);
+        return ResponseEntity.status(status)
+            .body(ApiResponse.of(status.value(), message, data));
+    }
+
+    public static ResponseEntity<ApiResponse<Void>> success(HttpStatus status, String message) {
+        return success(status, message, null);
     }
 
     public static ResponseEntity<ErrorResponse> error(HttpStatus status, String errorCode, String message) {
-        return BASE_RESPONSE.error(status, errorCode, message);
+        return ResponseEntity.status(status)
+            .body(ErrorResponse.of(status.value(), errorCode, message));
     }
 
     public static ResponseEntity<ErrorResponse> validationError(String message, Map<String, String> errors) {
-        return BASE_RESPONSE.validationError(message, errors);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+            .body(ErrorResponse.validation(HttpStatus.BAD_REQUEST.value(), message, errors));
     }
 
     public static <T> ResponseEntity<ApiResponse<T>> created(String message, T data) {
-        return BASE_RESPONSE.created(message, data);
+        return success(HttpStatus.CREATED, message, data);
+    }
+
+    public static ResponseEntity<ApiResponse<Void>> created(String message) {
+        return success(HttpStatus.CREATED, message);
     }
 }

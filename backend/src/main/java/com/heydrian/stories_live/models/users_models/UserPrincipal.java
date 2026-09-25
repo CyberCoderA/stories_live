@@ -7,6 +7,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import java.util.Collection;
 import java.util.Collections;
 
+import com.heydrian.stories_live.enums.Roles;
 import org.jspecify.annotations.Nullable;
 
 public class UserPrincipal implements UserDetails {
@@ -18,7 +19,8 @@ public class UserPrincipal implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return Collections.singleton(new SimpleGrantedAuthority("USER"));
+        Roles role = user.getUserRole() == null ? Roles.USER : user.getUserRole();
+        return Collections.singleton(new SimpleGrantedAuthority("ROLE_" + role.name()));
     }
 
     @Override

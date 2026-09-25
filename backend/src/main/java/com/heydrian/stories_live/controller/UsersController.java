@@ -7,7 +7,6 @@ import java.util.UUID;
 
 import jakarta.validation.Valid;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -38,14 +37,12 @@ import com.heydrian.stories_live.services.UserService;
 public class UsersController {
     private final UsersRepository usersRepository;
     private final UserService userService;
-
-    @Autowired 
-    private EmailService emailService;
+    private final EmailService emailService;
     
-    // Constructor for UsersController that takes a UsersRepository as a parameter
-    public UsersController(UsersRepository usersRepository, UserService userService) {
+    public UsersController(UsersRepository usersRepository, UserService userService, EmailService emailService) {
         this.usersRepository = usersRepository;
         this.userService = userService;
+        this.emailService = emailService;
     }
 
     @PostMapping("/login")
@@ -110,6 +107,7 @@ public class UsersController {
             request.username(),
             request.password(),
             request.email(),
+            request.role(),
             UserStatus.PENDING_VERIFICATION,
             currentTimestamp,
             currentTimestamp,
