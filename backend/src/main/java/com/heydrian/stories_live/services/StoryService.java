@@ -54,4 +54,15 @@ public class StoryService {
 
         return storyRepo.save(story);
     }
+
+    public Stories getStory(String id, String author) {
+        Stories story = storyRepo.findByStoryId(id);
+        if (story == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Story not found");
+        }
+        if (author != null && !author.equals(story.getStoryAuthor())) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Story not found");
+        }
+        return story;
+    }
 }
