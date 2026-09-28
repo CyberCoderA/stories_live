@@ -98,7 +98,9 @@ public class ChapterService {
 
     public void delete(String chapterId, String author) {
         Chapters chapter = get(chapterId, author);
-        chaptersRepository.delete(chapter);
+        if (chapter.getChapterPublishedAt() == null) {
+            chaptersRepository.delete(chapter);
+        } else throw new ResponseStatusException(HttpStatus.CONFLICT, "Cannot delete published story!");
     }
 
     private Stories ownedStory(String storyId, String author) {
