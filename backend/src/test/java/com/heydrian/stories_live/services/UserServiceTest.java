@@ -2,6 +2,7 @@ package com.heydrian.stories_live.services;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -11,6 +12,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import com.heydrian.stories_live.enums.Roles;
 import com.heydrian.stories_live.models.users_models.Users;
 import com.heydrian.stories_live.repository.users_repository.PasswordResetRepository;
 import com.heydrian.stories_live.repository.users_repository.UsersRepository;
@@ -43,6 +45,21 @@ class UserServiceTest {
         ReflectionTestUtils.setField(userService, "jwtService", jwtService);
         ReflectionTestUtils.setField(userService, "authenticationManager", authenticationManager);
         ReflectionTestUtils.setField(userService, "emailService", emailService);
+    }
+
+    @Test
+    void addUser_shouldDefaultToUserRoleWhenNull() {
+        Users user = new Users();
+        user.setUserPassword("plainPassword");
+        user.setUsername("alice");
+        user.setUserEmail("alice@example.com");
+        user.setUserRole(null);
+
+        when(usersRepository.save(any(Users.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        Users saved = userService.addUser(user);
+
+        assertEquals(Roles.USER, saved.getUserRole());
     }
 
     @Test

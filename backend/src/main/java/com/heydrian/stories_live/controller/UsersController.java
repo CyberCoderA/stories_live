@@ -25,6 +25,7 @@ import com.heydrian.stories_live.dto.request.ResendVerificationRequest;
 import com.heydrian.stories_live.dto.request.UpdateUsernameRequest;
 import com.heydrian.stories_live.dto.request.VerifyEmailRequest;
 import com.heydrian.stories_live.dto.response.UserResponse;
+import com.heydrian.stories_live.enums.Roles;
 import com.heydrian.stories_live.enums.UserStatus;
 import com.heydrian.stories_live.models.users_models.Users;
 import com.heydrian.stories_live.repository.users_repository.UsersRepository;
@@ -107,7 +108,7 @@ public class UsersController {
             request.username(),
             request.password(),
             request.email(),
-            request.role(),
+            Roles.USER,
             UserStatus.PENDING_VERIFICATION,
             currentTimestamp,
             currentTimestamp,

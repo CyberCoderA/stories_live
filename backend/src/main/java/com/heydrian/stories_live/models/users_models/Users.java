@@ -5,6 +5,8 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -61,4 +63,12 @@ public class Users {
 
     @Column(name = "email_verified")
     private Boolean emailVerified;
+
+    @PrePersist
+    @PreUpdate
+    private void ensureSingleRole() {
+        if (this.userRole == null) {
+            this.userRole = Roles.USER;
+        }
+    }
 }

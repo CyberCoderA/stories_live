@@ -12,6 +12,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.Base64;
 
+import com.heydrian.stories_live.enums.Roles;
 import com.heydrian.stories_live.models.users_models.PasswordResetToken;
 import com.heydrian.stories_live.models.users_models.Users;
 import com.heydrian.stories_live.repository.users_repository.PasswordResetRepository;
@@ -58,6 +59,9 @@ public class UserService {
     }
 
     public Users addUser(Users user) {
+        if (user.getUserRole() == null) {
+            user.setUserRole(Roles.USER);
+        }
         user.setUserPassword(encoder.encode(user.getUserPassword()));
         user.setUserVerificationCode(encoder.encode(user.getUserVerificationCode()));
         return repo.save(user);
